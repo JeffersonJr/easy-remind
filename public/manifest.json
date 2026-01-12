@@ -1,0 +1,22 @@
+{
+  "name": "EasyRemind - Lembretes Inteligentes",
+  "short_name": "EasyRemind",
+  "description": "SaaS de produtividade focado em lembretes inteligentes via linguagem natural",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/easyremind.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "pt-BR",
+  "scope": "/",
+  "id": "easyremind"
+}

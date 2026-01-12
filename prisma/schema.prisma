@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  plan              Plan      @default(FREE)
+  stripeCustomerId  String?   @unique
+  subscriptionStatus String?  @default("canceled")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  reminders Reminder[]
+  
+  @@map("users")
+}
+
+model Reminder {
+  id          String       @id @default(cuid())
+  userId      String
+  content     String
+  rawText     String
+  isRecurring Boolean      @default(false)
+  frequency   Frequency?
+  daysOfWeek  Int[]        // 0-6 (Sunday-Saturday)
+  nextRunAt   DateTime
+  status      ReminderStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("reminders")
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  CANCELED
+}
