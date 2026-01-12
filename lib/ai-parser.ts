@@ -1,10 +1,15 @@
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('The OPENAI_API_KEY environment variable is missing or empty')
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
-interface ParsedReminder {
+export interface ParsedReminder {
   content: string
   isRecurring: boolean
   frequency?: 'WEEKLY' | 'DAILY' | 'MONTHLY'
@@ -48,6 +53,7 @@ Exemplos:
 "pagar aluguel todo dia 10" -> recurring monthly, day 10
 `
 
+    const openai = getOpenAIClient()
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],

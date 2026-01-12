@@ -7,17 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import { DatePicker } from './date-picker'
 import { UpgradeModal } from './upgrade-modal'
 import { createReminder } from '@/app/actions/reminder'
+import { parseReminderText } from '@/app/actions/ai-parser'
 import { useToast } from '@/components/ui/use-toast'
-import { parseNaturalLanguage, parseWithRegex } from '@/lib/ai-parser'
-
-interface ParsedReminder {
-  content: string
-  isRecurring: boolean
-  frequency?: 'WEEKLY' | 'DAILY' | 'MONTHLY'
-  daysOfWeek?: number[]
-  nextRunAt: Date
-  time?: string
-}
+import type { ParsedReminder } from '@/lib/ai-parser'
 
 export function CommandBar({ onReminderCreated }: { onReminderCreated: () => void }) {
   const [input, setInput] = useState('')
@@ -63,12 +55,8 @@ export function CommandBar({ onReminderCreated }: { onReminderCreated: () => voi
       return
     }
     
-    // Tenta primeiro com AI, fallback para regex
-    let parsed = await parseNaturalLanguage(value)
-    if (!parsed) {
-      parsed = parseWithRegex(value)
-    }
-    
+    // Usa a server action para parsing
+    const parsed = await parseReminderText(value)
     setParsedPreview(parsed)
   }
 
@@ -104,13 +92,23 @@ export function CommandBar({ onReminderCreated }: { onReminderCreated: () => voi
     setIsCreating(true)
     try {
       const data = overrideData || parsedPreview!
+      
+      if (!data.content) {
+        toast({
+          title: "Conteúdo inválido",
+          description: "O conteúdo do lembrete não pode estar vazio.",
+          variant: "destructive"
+        })
+        return
+      }
+      
       const result = await createReminder({
         content: data.content,
         rawText: input,
-        isRecurring: data.isRecurring,
-        frequency: data.frequency,
+        isRecurring: data.isRecurring ?? false,
+        frequency: data.frequency || undefined,
         daysOfWeek: data.daysOfWeek,
-        nextRunAt: data.nextRunAt,
+        nextRunAt: data.nextRunAt || new Date(),
       })
 
       if (result.success) {
